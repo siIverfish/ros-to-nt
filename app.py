@@ -5,8 +5,7 @@ import rospy
 
 
 def main():
-    ROSSubscriberNode( NetworkTablesSender() )\
-        .spin()
+    ROSSubscriberNode( NetworkTablesSender() ).spin()
 
 
 def tf_message_to_double_array(/, tf_message):
