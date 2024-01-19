@@ -8,7 +8,7 @@ def main():
     ROSSubscriberNode( NetworkTablesSender() ).spin()
 
 
-def tf_message_to_double_array(/, tf_message):
+def tf_message_to_double_array(tf_message):
     # This is the only function that really 'does' anything.
     # Convert the tf_message object to an array of doubles
     # so that it can be sent to the Java code.
@@ -35,7 +35,7 @@ class ROSSubscriberNode:
     
 
     @staticmethod
-    def DEFAULT_CALLBACK(/, data):
+    def DEFAULT_CALLBACK(data):
         rospy.loginfo(f"I heard {data.data}")
 
 
@@ -44,8 +44,8 @@ class ROSSubscriberNode:
         ros_topic_name    = ros_topic_name    or self.ROS_TOPIC_NAME
         data_type         = data_type         or self.DATA_TYPE
 
-        rospy.init_node(f"Listener@{callback.__name__}")
-        rospy.Subscriber(ros_topic_name, data_type, callback)
+        rospy.init_node(f"Listener@{callback_function.__name__}")
+        rospy.Subscriber(ros_topic_name, data_type, callback_function)
     
 
     def spin(self):
