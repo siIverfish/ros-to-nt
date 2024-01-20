@@ -5,7 +5,11 @@ import rospy
 
 
 def main():
-    ROSSubscriberNode( NetworkTablesSender() ).spin()
+    ROSSubscriberNode( 
+        NetworkTablesSender(
+            tf_message_to_double_array
+        ) 
+    ).spin()
 
 
 def tf_message_to_double_array(tf_message):
@@ -39,7 +43,7 @@ class ROSSubscriberNode:
         rospy.loginfo(f"I heard {data.data}")
 
 
-    def __init__(self, *, callback_function=None, networktables_topic_name=None, data_type=None):
+    def __init__(self, *, callback_function=None, ros_topic_name=None, data_type=None):
         callback_function = callback_function or self.DEFAULT_CALLBACK
         ros_topic_name    = ros_topic_name    or self.ROS_TOPIC_NAME
         data_type         = data_type         or self.DATA_TYPE
@@ -68,11 +72,15 @@ class NetworkTablesSender:
     TABLE_NAME = "datatable"
 
 
-    def __init__(self, *, ros_topic_name=None, table_name=None):
+    def __init__(self, *, converter, ros_topic_name=None, table_name=None):
         # Almost certainly we won't need to pass args to change the defaults
         # but it's there just in case :/
         networktables_topic_name = networktables_topic_name or self.NETWORKTABLES_TOPIC_NAME
         table_name               = table_name               or self.TABLE_NAME
+
+        # the function to convert the ROS object into something NetworkTables
+        # can comprehend
+        self.converter = converter
 
         # Get the default instance of NetworkTables that was created automatically
         # when the robot program starts
@@ -81,9 +89,7 @@ class NetworkTablesSender:
         # be as many tables as you like and exist to make it easier to organize
         # your data. In this case, it's a table called datatable.
 
-        # Start publishing topics within that table that correspond to the X and Y values
-        # for some operation in your program.
-        # The topic names are actually "/datatable/x" and "/datatable/y".
+        # Start publishing topics within that table
         self.double_array_publisher = \
             ntcore.NetworkTableInstance\
                 .getDefault()\
@@ -96,7 +102,7 @@ class NetworkTablesSender:
         # Convert tf_message to a a double array and publish it to Networktables
         # Central function along with `tf_message_to_double_array`
         self.double_array_publisher.set(
-            tf_message_to_double_array(
+            self.converter(
                 tf_message
             )
         )
